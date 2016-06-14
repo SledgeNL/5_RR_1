@@ -1,9 +1,4 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 <BR>
@@ -22,7 +17,8 @@ output:
 
 #### - - Libraries - -
 
-```{r libraries, message=FALSE}
+
+```r
 library(dplyr)
 library(lattice)
 ```
@@ -31,8 +27,8 @@ library(lattice)
 
 #### - - Loading - -
 
-```{r loading}
 
+```r
 if(!file.exists("./data")){dir.create("./data")}
 fileUrl = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 download.file(fileUrl,
@@ -40,14 +36,14 @@ download.file(fileUrl,
 RDA <- read.csv(unz("./data/repdata_data_activity.zip", "activity.csv"), 
                 header=TRUE, stringsAsFactors=FALSE, dec=".")
 unlink("./data/repdata_data_activity.zip")
-
 ```
 
 <BR>
 
 #### - - Processing - -
 
-```{r processing}
+
+```r
 RDA$date <- as.Date(RDA$date)              # convert character-date to date-date
 ```
 
@@ -67,7 +63,8 @@ RDA$date <- as.Date(RDA$date)              # convert character-date to date-date
 
 #### - - Number of steps per day - -
 
-```{r steps_per_day}
+
+```r
 RDA_per_day <- RDA %>%                              # sum the steps for each day
         group_by(date) %>%
                 summarise_each(funs(sum), steps)
@@ -77,26 +74,30 @@ RDA_per_day <- RDA %>%                              # sum the steps for each day
 
 #### - - Histogram of daily steps - -
 
-```{r histogram}
+
+```r
 hist(RDA_per_day$steps, 
         xlab="Total Steps Per Day", 
         main="Total Steps Per Day From 01-10-2012 To 30-11-2012")
 rug(RDA_per_day$steps)
 ```
 
+![](PA1_template_files/figure-html/histogram-1.png)<!-- -->
+
 <BR>
 
 #### - - Mean and median of number of daily steps - -
 
-```{r mean_and_median}
+
+```r
 summary_RDA_per_day <- summary(RDA_per_day$steps) 
 median_RDA_per_day  <- format(summary_RDA_per_day["Median"], digits="2")
 mean_RDA_per_day    <- format(summary_RDA_per_day["Mean"], digits="2")
 ```
 
-The median number of steps per day is `r median_RDA_per_day`.  
+The median number of steps per day is 10760.  
 
-The mean number of steps per day is `r mean_RDA_per_day`.
+The mean number of steps per day is 10770.
 
 <BR>
 
@@ -110,7 +111,8 @@ The mean number of steps per day is `r mean_RDA_per_day`.
 
 #### - - Timeseries plot - - 
 
-```{r lineplot}
+
+```r
 RDA_per_interval <- tapply(RDA$steps, RDA$interval, mean, na.rm=TRUE) 
 plot(RDA_per_interval, 
         type="l", 
@@ -121,15 +123,18 @@ axis(1, at = seq(1, 288, by = 12), las=2,
         labels=names(RDA_per_interval)[seq(1,288,by=12)])
 ```
 
+![](PA1_template_files/figure-html/lineplot-1.png)<!-- -->
+
 <BR>
 
 #### - - Interval with highest average - - 
 
-```{r max_interval}
+
+```r
 interval_max <- names(which.max(RDA_per_interval))	
 ```
 
-The interval with the highest average number of steps across all days is `r interval_max`.
+The interval with the highest average number of steps across all days is 835.
 
 
 <BR>
@@ -150,11 +155,12 @@ The interval with the highest average number of steps across all days is `r inte
 
 #### - - Number of NA - - 
 
-```{r number_of_NA}
+
+```r
 number_of_NA <- summary(RDA$steps)["NA's"]
 ```
 
-The number of Missing Values in the steps data is `r number_of_NA`.
+The number of Missing Values in the steps data is 2304.
 
 <BR>
 
@@ -167,14 +173,16 @@ and intervals. Take the average of those numbers and impute it to the original N
 
 #### - - Create new dataset, with filled NA - -
 
-```{r factor_weekday}
+
+```r
 RDA$weekday <- as.factor(as.POSIXlt(RDA$date)$wday)   # add a factor for weekdays
                                                 # number to avoid language issues
                                                 # 0 = Sunday, 1 = Monday etc.
 ```
 
 
-```{r fill_NA}
+
+```r
 RDA_NA <- subset(RDA, is.na(steps))                     # create subset of NA only
 
 RDA_non_NA <- subset(RDA, !is.na(steps))                # create subset of non-NA
@@ -195,7 +203,8 @@ RDA_complete <- rbind(RDA_non_NA, RDA_impute)           # create improved datase
 
 #### - - Histogram of steps per day with improved dataset - -
 
-``` {r hist_improved}
+
+```r
 RDA_per_day_c <- 
         RDA_complete %>%
                 group_by(date) %>%
@@ -205,6 +214,8 @@ hist(RDA_per_day_c$steps,
         main="Total Steps Per Day From 01-10-2012 To 30-11-2012")
 rug(RDA_per_day_c$steps)
 ```
+
+![](PA1_template_files/figure-html/hist_improved-1.png)<!-- -->
 
 <BR>
 
@@ -226,7 +237,8 @@ This factor was created earlier in the script as I used weekdays for imputing NA
 
 #### - - Create panel plot - - 
 
-```{r panelPlot}
+
+```r
 RDA_complete$daytype <- ifelse(RDA_complete$weekday == 6 | RDA_complete$weekday == 0, 
         "Weekendday", 
         "Weekday")                                 # create a column for week(end)day
@@ -244,4 +256,6 @@ xyplot(steps ~ interval | daytype,
         ylab="Average Number Of Steps",
         main="Comparison Of Number Of Steps On A Weekday vs. On A Weekendday")
 ```
+
+![](PA1_template_files/figure-html/panelPlot-1.png)<!-- -->
 
